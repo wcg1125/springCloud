@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.association.mapper.ActLogMapper">
+
+    <select id="getActLogList" resultType="com.hln.association.entity.ActLog">
+        SELECT
+        ifnull( visit_count, 0 ) visit_count,
+        ifnull( login_count, 0 ) login_count,
+        DAY gmt_create
+        FROM
+        (
+        SELECT
+        DATE_FORMAT(
+        date_add(
+        last_day( #{time}),
+        INTERVAL ( cast( help_topic_id AS signed INTEGER ) - DAY ( last_day(#{time} ) ) ) + 1 DAY
+        ),
+        '%Y-%m-%d'
+        ) DAY
+        FROM
+        mysql.help_topic
+        WHERE
+        <choose>
+            <when test="flag=='this'.toString()">
+                help_topic_id &lt; DAY ( DATE_FORMAT( SYSDATE( ), '%Y-%m-%d' ) )
+            </when>
+            <otherwise>
+                help_topic_id &lt; DAY (last_day(#{time}))
+            </otherwise>
+        </choose>
+
+        ORDER BY
+        help_topic_id
+        ) timeTab
+        LEFT JOIN act_log ac ON DATE_FORMAT( ac.gmt_create, '%Y-%m-%d' ) = timeTab.DAY
+        order by DAY asc
+    </select>
+
+
+    <select id="getAddData" resultType="java.util.Map">
+        SELECT
+        ifnull( sum(visit_count), 0 ) visitTotal,
+        ifnull( sum(login_count), 0 ) LoginTotal
+        FROM  act_log
+    </select>
+
+    <select id="getThisLog" resultType="com.hln.association.entity.ActLog">
+        select * from act_log where TO_DAYS(gmt_create) = TO_DAYS(NOW())
+    </select>
+</mapper>

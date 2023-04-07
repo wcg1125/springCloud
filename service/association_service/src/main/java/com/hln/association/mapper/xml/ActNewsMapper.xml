@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.association.mapper.ActNewsMapper">
+
+    <select id="getNewTotal" resultType="java.lang.Integer">
+        select count(1) from act_news where type =#{type}
+    </select>
+
+    <select id="getNewList" resultType="com.hln.association.entity.ActNews">
+        SELECT
+        an.id,
+        am.NAME,
+        an.title,
+        an.content,
+        an.gmt_create,
+        an.is_top
+        FROM
+        act_news an
+        LEFT JOIN act_menu am ON an.m_id = am.id
+        WHERE
+        an.type = #{type}
+        ORDER BY
+        (case when is_top='Y' then 1 ELSE 2 END) ASC,
+        LEVEL ASC
+        LIMIT #{index}, #{size}
+    </select>
+
+
+    <select id="getLevelMax" resultType="java.lang.Long">
+        SELECT ifnull(max(level),0) FROM act_news
+    </select>
+    
+    
+    <select id="moveNews" resultType="com.hln.association.entity.ActNews">
+        select *  from act_news 
+        <where>
+            <if test="status=='up'.toString()">
+                level &lt; #{level}
+                order by  level desc limit 1
+            </if>
+            <if test="status=='down'.toString()">
+                level > #{level}
+                order by level limit 1
+            </if>
+        </where>
+    </select>
+</mapper>
