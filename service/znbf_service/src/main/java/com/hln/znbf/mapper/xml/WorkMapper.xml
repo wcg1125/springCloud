@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.znbf.mapper.WorkMapper">
+
+    <select id="getWorkApplyList" resultType="com.hln.znbf.entity.Work">
+        SELECT
+        zw.id,
+        zw.area_code,
+        zw.area_name,
+        zw.name,
+        zw.unit,
+        zw.type,
+        zw.num,
+        zw.salary,
+        zw.xlyq,
+        zw.address,
+        zw.linkman,
+        zw.mobile,
+        za.status,
+        za.gmt_create
+        FROM
+        `znbf_apply` za
+        LEFT JOIN znbf_work zw ON za.work_id = zw.id
+        <where>
+         za.work_id = #{userId}
+        </where>
+        ORDER BY
+        za.gmt_create DESC
+        LIMIT #{index}, #{pageSize};
+    </select>
+</mapper>
