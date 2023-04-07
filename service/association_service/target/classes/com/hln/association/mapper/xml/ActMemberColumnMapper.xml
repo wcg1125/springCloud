@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.association.mapper.ActMemberColumnMapper">
+
+
+    <insert id="addMemberColumnInfo">
+        insert into act_member_column
+        (id ,m_id,title,name,value,status,gmt_create,gmt_modified)
+        values
+        <foreach collection="members" item="item" index="index" separator=",">
+            (
+                null,#{id},#{item.title},#{item.name},#{item.value},#{item.status},now(),now()
+            )
+        </foreach>
+    </insert>
+
+
+    <update id="updateMemberColumnInfo">
+            <foreach collection="members" item="item" index="index" open="" close="" separator=";">
+                update act_member_column
+                <set>
+                    value = #{item.value},
+                    status = #{item.status},
+                    gmt_modified=now()
+                </set>
+                where `id` = ${item.id}
+            </foreach>
+    </update>
+</mapper>
