@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.znbf.mapper.ApplyMapper">
+
+
+    <select id="getApplyCount" resultType="java.lang.Integer">
+        SELECT
+        count(1)
+        FROM
+        `znbf_apply` za
+        LEFT JOIN znbf_work zw ON za.work_id = zw.id
+        left join  znbf_dsrnh zd on za.user_id= zd.id
+        <where>
+            1=1
+            <if test="status !=null and status !=''"> and  za.status = 1</if>
+            <if test="name !=null and name !=''">and zw.name like concat(#{name},'%')</if>
+            <if test="workName !=null and workName !=''">  and zd.xm  like concat(#{workName},'%')</if>
+        </where>
+
+    </select>
+
+    <select id="getApplyList" resultType="com.hln.znbf.vo.WorkVo">
+        SELECT
+        zw.id workId,
+        zd.xm,
+        zd.xb,
+        zw.name,
+        zw.unit,
+        zw.type,
+        za.status,
+        za.gmt_create
+        FROM
+        `znbf_apply` za
+        LEFT JOIN znbf_work zw ON za.work_id = zw.id
+        left join  znbf_dsrnh zd on za.user_id= zd.id
+        <where>
+            1=1
+            <if test="status !=null and status !=''"> and  za.status = 1</if>
+            <if test="name !=null and name !=''">and zw.name like concat(#{name},'%')</if>
+            <if test="workName !=null and workName !=''">  and zd.xm  like concat(#{workName},'%')</if>
+        </where>
+        order by za.gmt_create desc
+        LIMIT #{index}, #{pageSize};
+    </select>
+</mapper>

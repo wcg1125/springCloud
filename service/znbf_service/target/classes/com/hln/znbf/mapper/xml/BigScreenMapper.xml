@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.znbf.mapper.BigScreenMapper">
+
+
+
+    <select id="getDoingTotal" resultType="java.lang.Long">
+        SELECT ifnull(sum(total),0)  FROM (
+        select count(1) total FROM znbf_work zw left join  znbf_apply  za on za.work_id=zw.id WHERE DATE_FORMAT( za.gmt_create, '%Y-%m' ) = DATE_FORMAT(
+        CURDATE( ),'%Y-%m')  and area_code like concat(#{areaCode},'%')
+        union all
+        SELECT count(1) total FROM znbf_wish zw left  join  znbf_dsrnh zd on zw.user_id=zd.id WHERE DATE_FORMAT(gmt_create, '%Y-%m' ) = DATE_FORMAT(
+        CURDATE( ),'%Y-%m')  and areacode like concat(#{areaCode},'%'))tab
+    </select>
+
+    <select id="getDoingList" resultType="com.hln.znbf.vo.WishWorkVo">
+        SELECT xm,sfzh,gmt_create time,'我有心愿' type ,
+        (case when zw.status='N' AND conclude='N' then '申请中' else '已结束' end)  status
+        FROM `znbf_wish` zw
+        LEFT JOIN znbf_dsrnh zd on zd.id=zw.user_id
+        WHERE areacode like concat(#{areaCode},'%')
+        union all
+        SELECT xm,sfzh,gmt_create time,'我要就业' type ,
+        (case when za.status='1'  then '申请中' else '已结束' end)  status
+        FROM `znbf_apply` za
+        LEFT JOIN znbf_dsrnh zd on zd.id=za.user_id
+        WHERE areacode like concat(#{areaCode},'%')
+    </select>
+
+    <select id="getThreeIndex" resultType="java.util.Map">
+        SELECT
+        rks,
+        wish_ywc_count + work_ywc_count ywc,
+        wish_jxz_count + work_jxz_count jxz
+        FROM
+        znbf_statistics
+        WHERE
+        area_code = #{areaCode}
+    </select>
+
+    <select id="getMapData" resultType="java.util.Map">
+        SELECT
+        jd,
+        wd,
+        code,
+        name,
+        rks
+        FROM
+        znbf_region zr
+        LEFT JOIN znbf_statistics zs ON zr.CODE = zs.area_code
+        WHERE
+        zr.CODE LIKE concat(#{areaCode}, '%' )
+        AND length( zr.CODE ) = length( #{areaCode} ) + 2
+    </select>
+
+    <select id="getAreaList" resultType="java.util.Map">
+        SELECT
+        jd,
+        wd,
+        code,
+        name,
+        ifnull(wish_jxz_count+wish_ywc_count+work_jxz_count+work_ywc_count,0) total
+        FROM
+        znbf_region zr
+        LEFT JOIN znbf_statistics zs ON zr.CODE = zs.area_code
+        WHERE
+        zr.CODE LIKE concat( #{areaCode}, '%' )
+        AND length( zr.CODE ) = length( #{areaCode}) + 2
+    </select>
+
+    <select id="getFourData" resultType="java.util.Map">
+        SELECT
+        ifnull(policy_count,0) policyCount,
+        ifnull(post_count,0) postCount,
+        ifnull(wish_jxz_count+wish_ywc_count+work_jxz_count+work_ywc_count,0) total
+        FROM
+        `znbf_statistics`
+        WHERE area_code =#{areaCode}
+    </select>
+</mapper>

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.znbf.mapper.TimedTaskMapper">
+
+
+
+    <insert id="saveList">
+        insert into  znbf_statistics (id, area_code,rks, policy_count, post_count, wish_jxz_count ,
+        wish_ywc_count ,work_jxz_count, work_ywc_count)
+        values
+        <foreach collection="list" item="item" separator=",">
+            (
+            null,
+            #{item.areaCode},
+            #{item.rks},
+            #{item.policyCount},
+            #{item.postCount},
+            #{item.wishJxzCount},
+            #{item.wishYwcCount},
+            #{item.workJxzCount},
+            #{item.workYwcCount}
+            )
+        </foreach>
+    </insert>
+
+
+    <delete id="truncateTable">
+        truncate table znbf_statistics
+    </delete>
+
+
+    <select id="dsrnhTask" resultType="com.hln.znbf.task.entity.ZnbfStatistics">
+        SELECT
+        sum(case when type ='1' then total else 0 end )rks,
+        sum(case when type ='2' then total else 0 end )policy_count,
+        sum(case when type ='3' then total else 0 end )wish_jxz_count,
+        sum(case when type ='4' then total else 0 end )wish_ywc_count,
+        sum(case when type ='5' then total else 0 end )work_jxz_count,
+        sum(case when type ='6' then total else 0 end )work_ywc_count,
+        sum(case when type ='7' then total else 0 end )post_count,
+        '33' area_code
+        FROM (
+        SELECT count(1) total ,'1' type FROM znbf_dsrnh
+        union all
+        SELECT count(1) total, '2' type FROM znbf_policy
+        union all
+        SELECT count(1) total ,'3' type FROM znbf_wish WHERE conclude='N' AND status='N'
+        union all
+        SELECT count(1) total, '4' type FROM znbf_wish WHERE conclude='Y' OR status='Y'
+        union all
+        SELECT count(1) total ,'5' type FROM znbf_apply WHERE status='1'
+        union all
+        SELECT count(1) total ,'6' type FROM znbf_apply WHERE status !='1'
+        union all
+        SELECT count(1) total ,'7' type FROM znbf_work WHERE status ='Y') tab
+
+        union all
+        SELECT
+        ifnull(tab1.total,0) rks,
+        ifnull(tab2.total,0) policy_count,
+        ifnull(tab3.total,0) wish_jxz_count,
+        ifnull(tab4.total,0) wish_ywc_count,
+        ifnull(tab5.total,0) work_jxz_count,
+        ifnull(tab6.total,0) work_ywc_count,
+        ifnull(tab7.total,0) post_count,
+        tab1.code area_code
+        FROM
+        (SELECT count(1) total ,substr(areacode,1,4) code  FROM znbf_dsrnh GROUP BY code ) tab1
+        left  join
+        (SELECT count(1) total,substr(area_code,1,4) code  FROM znbf_policy GROUP BY code ) tab2
+        on tab1.code=tab2.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,4) code FROM znbf_wish zw left join znbf_dsrnh zd on zd.id=zw.user_id WHERE conclude='N' AND zw.status='N' GROUP BY code) tab3
+        on tab1.code=tab3.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,4) code FROM znbf_wish zw left join znbf_dsrnh zd on zd.id=zw.user_id WHERE conclude='Y' OR zw.status='Y' GROUP BY code) tab4
+        on tab1.code=tab4.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,4) code  FROM znbf_apply za left join znbf_dsrnh zd on zd.id=za.user_id  WHERE za.status='1' ) tab5
+        on tab1.code=tab5.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,4) code  FROM znbf_apply za left join znbf_dsrnh zd on zd.id=za.user_id  WHERE za.status!='1' ) tab6
+        on tab1.code=tab6.code
+        left join
+        (SELECT count(1) total ,substr(area_code,1,4) code  FROM znbf_work  WHERE status ='Y' ) tab7
+        on tab1.code=tab7.code
+        union all
+        SELECT
+        ifnull(tab1.total,0) rks,
+        ifnull(tab2.total,0) policy_count,
+        ifnull(tab3.total,0) wish_jxz_count,
+        ifnull(tab4.total,0) wish_ywc_count,
+        ifnull(tab5.total,0) work_jxz_count,
+        ifnull(tab6.total,0) work_ywc_count,
+        ifnull(tab7.total,0) post_count,
+        tab1.code area_code
+        FROM
+        (SELECT count(1) total ,substr(areacode,1,6) code  FROM znbf_dsrnh GROUP BY code ) tab1
+        left  join
+        (SELECT count(1) total,substr(area_code,1,6) code  FROM znbf_policy GROUP BY code ) tab2
+        on tab1.code=tab2.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,6) code FROM znbf_wish zw left join znbf_dsrnh zd on zd.id=zw.user_id WHERE conclude='N' AND zw.status='N' GROUP BY code) tab3
+        on tab1.code=tab3.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,6) code FROM znbf_wish zw left join znbf_dsrnh zd on zd.id=zw.user_id WHERE conclude='Y' OR zw.status='Y' GROUP BY code) tab4
+        on tab1.code=tab4.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,6) code  FROM znbf_apply za left join znbf_dsrnh zd on zd.id=za.user_id  WHERE za.status='1' ) tab5
+        on tab1.code=tab5.code
+        left join
+        (SELECT count(1) total ,substr(areacode,1,6) code  FROM znbf_apply za left join znbf_dsrnh zd on zd.id=za.user_id  WHERE za.status!='1' ) tab6
+        on tab1.code=tab6.code
+        left join
+        (SELECT count(1) total ,substr(area_code,1,6) code  FROM znbf_work  WHERE status ='Y' ) tab7
+        on tab1.code=tab7.code
+
+    </select>
+</mapper>

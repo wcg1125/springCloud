@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hln.znbf.mapper.RegionMapper">
+
+
+    <select id="getAreaList" resultType="com.hln.znbf.entity.Region">
+        SELECT
+            *
+        FROM znbf_region  WHERE code like concat(#{areaCode},'%')
+        and length(code)= length(#{areaCode})+2
+    </select>
+</mapper>
